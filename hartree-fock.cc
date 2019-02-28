@@ -39,7 +39,8 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
                  // this is a matrix with row-major storage (http://en.wikipedia.org/wiki/Row-major_order)
                  // to meet the layout of the integrals returned by the Libint integral library
 
-struct Atom {
+struct Atom
+{
     int atomic_number;
     double x, y, z;
 };
@@ -60,7 +61,8 @@ Matrix compute_2body_fock_simple(const std::vector<libint2::Shell>& shells,
 Matrix compute_2body_fock(const std::vector<libint2::Shell>& shells,
                                  const Matrix& D);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
   using std::cout;
   using std::cerr;
@@ -252,7 +254,8 @@ int main(int argc, char *argv[]) {
 }
 
 // this reads the geometry in the standard xyz format supported by most chemistry software
-std::vector<Atom> read_dotxyz(std::istream& is) {
+std::vector<Atom> read_dotxyz(std::istream& is)
+{
   // line 1 = # of atoms
   size_t natom;
   is >> natom;
@@ -303,7 +306,8 @@ std::vector<Atom> read_dotxyz(std::istream& is) {
   return atoms;
 }
 
-std::vector<Atom> read_geometry(const std::string& filename) {
+std::vector<Atom> read_geometry(const std::string& filename)
+{
 
   std::cout << "Will read geometry from " << filename << std::endl;
   std::ifstream is(filename);
@@ -325,145 +329,149 @@ std::vector<Atom> read_geometry(const std::string& filename) {
     throw "only .xyz files are accepted";
 }
 
-std::vector<libint2::Shell> make_sto3g_basis(const std::vector<Atom>& atoms) {
+std::vector<libint2::Shell> make_sto3g_basis(const std::vector<Atom>& atoms)
+{
 
-  using libint2::Shell;
+    using libint2::Shell;
 
-  std::vector<Shell> shells;
+    std::vector<Shell> shells;
 
-  for(auto a=0; a<atoms.size(); ++a) {
+    for(auto a=0; a<atoms.size(); ++a) {
 
-    // STO-3G basis set
-    // cite: W. J. Hehre, R. F. Stewart, and J. A. Pople, The Journal of Chemical Physics 51, 2657 (1969)
-    //       doi: 10.1063/1.1672392
-    // obtained from https://bse.pnl.gov/bse/portal
-    switch (atoms[a].atomic_number) {
-      case 1: // Z=1: hydrogen
-        shells.push_back(
-            {
-              {3.425250910, 0.623913730, 0.168855400}, // exponents of primitive Gaussians
-              {  // contraction 0: s shell (l=0), spherical=false, contraction coefficients
-                {0, false, {0.15432897, 0.53532814, 0.44463454}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}   // origin coordinates
-            }
-        );
-        break;
+        // STO-3G basis set
+        // cite: W. J. Hehre, R. F. Stewart, and J. A. Pople, The Journal of Chemical Physics 51, 2657 (1969)
+        //       doi: 10.1063/1.1672392
+        // obtained from https://bse.pnl.gov/bse/portal
+        switch (atoms[a].atomic_number) {
+            case 1: // Z=1: hydrogen
+                shells.push_back(
+                        {
+                        {3.425250910, 0.623913730, 0.168855400}, // exponents of primitive Gaussians
+                        {  // contraction 0: s shell (l=0), spherical=false, contraction coefficients
+                        {0, false, {0.15432897, 0.53532814, 0.44463454}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}   // origin coordinates
+                        }
+                        );
+                break;
 
-      case 6: // Z=6: carbon
-        shells.push_back(
-            {
-              {71.616837000, 13.045096000, 3.530512200},
-              {
-                {0, false, {0.15432897, 0.53532814, 0.44463454}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        shells.push_back(
-            {
-              {2.941249400, 0.683483100, 0.222289900},
-              {
-                {0, false, {-0.09996723, 0.39951283, 0.70011547}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        shells.push_back(
-            {
-              {2.941249400, 0.683483100, 0.222289900},
-              { // contraction 0: p shell (l=1), spherical=false
-                {1, false, {0.15591627, 0.60768372, 0.39195739}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        break;
+            case 6: // Z=6: carbon
+                shells.push_back(
+                        {
+                        {71.616837000, 13.045096000, 3.530512200},
+                        {
+                        {0, false, {0.15432897, 0.53532814, 0.44463454}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                shells.push_back(
+                        {
+                        {2.941249400, 0.683483100, 0.222289900},
+                        {
+                        {0, false, {-0.09996723, 0.39951283, 0.70011547}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                shells.push_back(
+                        {
+                        {2.941249400, 0.683483100, 0.222289900},
+                        { // contraction 0: p shell (l=1), spherical=false
+                        {1, false, {0.15591627, 0.60768372, 0.39195739}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                break;
 
-      case 7: // Z=7: nitrogen
-        shells.push_back(
-            {
-              {99.106169000, 18.052312000, 4.885660200},
-              {
-                {0, false, {0.15432897, 0.53532814, 0.44463454}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        shells.push_back(
-            {
-              {3.780455900, 0.878496600, 0.285714400},
-              {
-                {0, false, {-0.09996723, 0.39951283, 0.70011547}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        shells.push_back(
-            {
-          {3.780455900, 0.878496600, 0.285714400},
-              { // contraction 0: p shell (l=1), spherical=false
-                {1, false, {0.15591627, 0.60768372, 0.39195739}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        break;
+            case 7: // Z=7: nitrogen
+                shells.push_back(
+                        {
+                        {99.106169000, 18.052312000, 4.885660200},
+                        {
+                        {0, false, {0.15432897, 0.53532814, 0.44463454}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                shells.push_back(
+                        {
+                        {3.780455900, 0.878496600, 0.285714400},
+                        {
+                        {0, false, {-0.09996723, 0.39951283, 0.70011547}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                shells.push_back(
+                        {
+                        {3.780455900, 0.878496600, 0.285714400},
+                        { // contraction 0: p shell (l=1), spherical=false
+                        {1, false, {0.15591627, 0.60768372, 0.39195739}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                break;
 
-      case 8: // Z=8: oxygen
-        shells.push_back(
-            {
-              {130.709320000, 23.808861000, 6.443608300},
-              {
-                {0, false, {0.15432897, 0.53532814, 0.44463454}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        shells.push_back(
-            {
-              {5.033151300, 1.169596100, 0.380389000},
-              {
-                {0, false, {-0.09996723, 0.39951283, 0.70011547}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        shells.push_back(
-            {
-              {5.033151300, 1.169596100, 0.380389000},
-              { // contraction 0: p shell (l=1), spherical=false
-                {1, false, {0.15591627, 0.60768372, 0.39195739}}
-              },
-              {{atoms[a].x, atoms[a].y, atoms[a].z}}
-            }
-        );
-        break;
+            case 8: // Z=8: oxygen
+                shells.push_back(
+                        {
+                        {130.709320000, 23.808861000, 6.443608300},
+                        {
+                        {0, false, {0.15432897, 0.53532814, 0.44463454}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                shells.push_back(
+                        {
+                        {5.033151300, 1.169596100, 0.380389000},
+                        {
+                        {0, false, {-0.09996723, 0.39951283, 0.70011547}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                shells.push_back(
+                        {
+                        {5.033151300, 1.169596100, 0.380389000},
+                        { // contraction 0: p shell (l=1), spherical=false
+                        {1, false, {0.15591627, 0.60768372, 0.39195739}}
+                        },
+                        {{atoms[a].x, atoms[a].y, atoms[a].z}}
+                        }
+                        );
+                break;
 
-      default:
-        throw "do not know STO-3G basis for this Z";
+            default:
+                throw "do not know STO-3G basis for this Z";
+        }
+
     }
 
-  }
-
-  return shells;
+    return shells;
 }
 
-size_t nbasis(const std::vector<libint2::Shell>& shells) {
-  size_t n = 0;
-  for (const auto& shell: shells)
-    n += shell.size();
-  return n;
+size_t nbasis(const std::vector<libint2::Shell>& shells)
+{
+    size_t n = 0;
+    for (const auto& shell: shells)
+        n += shell.size();
+    return n;
 }
 
-size_t max_nprim(const std::vector<libint2::Shell>& shells) {
+size_t max_nprim(const std::vector<libint2::Shell>& shells)
+{
   size_t n = 0;
   for (auto shell: shells)
     n = std::max(shell.nprim(), n);
   return n;
 }
 
-int max_l(const std::vector<libint2::Shell>& shells) {
+int max_l(const std::vector<libint2::Shell>& shells)
+{
   int l = 0;
   for (auto shell: shells)
     for (auto c: shell.contr)
@@ -471,7 +479,8 @@ int max_l(const std::vector<libint2::Shell>& shells) {
   return l;
 }
 
-std::vector<size_t> map_shell_to_basis_function(const std::vector<libint2::Shell>& shells) {
+std::vector<size_t> map_shell_to_basis_function(const std::vector<libint2::Shell>& shells)
+{
   std::vector<size_t> result;
   result.reserve(shells.size());
 
@@ -486,7 +495,8 @@ std::vector<size_t> map_shell_to_basis_function(const std::vector<libint2::Shell
 
 // computes Superposition-Of-Atomic-Densities guess for the molecular density matrix
 // in minimal basis; occupies subshells by smearing electrons evenly over the orbitals
-Matrix compute_soad(const std::vector<Atom>& atoms) {
+Matrix compute_soad(const std::vector<Atom>& atoms)
+{
 
   // compute number of atomic orbitals
   size_t nao = 0;
@@ -579,7 +589,8 @@ Matrix compute_1body_ints(const std::vector<libint2::Shell>& shells,
 }
 
 Matrix compute_2body_fock_simple(const std::vector<libint2::Shell>& shells,
-                                 const Matrix& D) {
+                                 const Matrix& D)
+{
 
   using libint2::Shell;
   using libint2::Engine;
@@ -671,7 +682,8 @@ Matrix compute_2body_fock_simple(const std::vector<libint2::Shell>& shells,
 }
 
 Matrix compute_2body_fock(const std::vector<libint2::Shell>& shells,
-                          const Matrix& D) {
+                          const Matrix& D)
+{
 
   using libint2::Shell;
   using libint2::Engine;
