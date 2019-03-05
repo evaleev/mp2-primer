@@ -1,0 +1,19 @@
+digraph hartree_fock {
+    // main [label="main"]
+    // read_dotxyz [label="read_dotxyz"]
+    // read_geometry [label="read_geometry"]
+    // make_sto3g_basis [label="make_sto3g_basis"]
+    // nbasis [label="nbasis"]
+    // max_nprim [label="max_nprim"]
+    // max_l [label="max_l"]
+    // map_shell_to_basis_function [label="map_shell_to_basis_function"]
+    // compute_soad [label="compute_soad"]
+    
+    main -> read_geometry[label="1", fontcolor=red]
+    main -> make_sto3g_basis[label="2", fontcolor=red]
+    main -> compute_1body_ints[label="3", fontcolor=red]
+    compute_1body_ints -> {nbasis engine map_shells_to_basis_function}
+    main -> compute_2body_fock[label="4", fontcolor=red]
+    compute_2body_fock -> {nbasis engine map_shells_to_basis_function}
+    engine -> {operator max_nprim max_l}
+}
