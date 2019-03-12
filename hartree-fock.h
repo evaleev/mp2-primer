@@ -19,6 +19,8 @@ std::vector<Atom> read_geometry(const std::string& filename);
 std::vector<libint2::Shell> make_sto3g_basis(const std::vector<Atom>& atoms);
 size_t nbasis(const std::vector<libint2::Shell>& shells);
 std::vector<size_t> map_shell_to_basis_function(const std::vector<libint2::Shell>& shells);
+size_t max_nprim(const std::vector<libint2::Shell>& shells);
+int max_l(const std::vector<libint2::Shell>& shells);
 Matrix compute_soad(const std::vector<Atom>& atoms);
 Matrix compute_1body_ints(const std::vector<libint2::Shell>& shells,
                           libint2::Operator t,
