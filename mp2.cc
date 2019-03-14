@@ -6,9 +6,10 @@
 #include <cstddef>
 #include <iostream>
 #include <vector>
+#include <math.h>
 #include "hartree-fock.h"
 
-void fill_ao_ints_vec(std::vector<libint2::Shell>& shells, std::vector<double>& ao_ints_vector) { 
+void fill_ao_ints_vec(std::vector<libint2::Shell>& shells, std::vector<double>& ao_ints_vector) {
      
     /* double mu, double neu, double lambda, double sigma) { */
     // returns 2e integral on ao basis
@@ -89,7 +90,48 @@ double int_2e_mo(Eigen::MatrixXd& coff_mat, std::vector<double>& ao_ints_vector,
                     size_t p, size_t q, size_t r, size_t s) {
     // specified p, q, r and s: indices of the two pairs of molecular orbitals
     // returns the two-electron repulsion integral
-    return 1.0;
+     
+    using std::pow;
+     
+    size_t n = ao_ints_vector.size();
+    auto nbasis = sqrt(sqrt(n));
+     
+    double result = 0;
+
+    // first loop
+    for (auto mu = 0; mu  < n; ++mu) {
+        for (auto neu = 0; neu < n; ++neu) {
+            for (auto lambda = 0; lambda < n; ++lambda) {
+                for (auto sigma = 0; sigma < n; ++sigma) {
+                    auto ao_int_position = mu*pow(nbasis,3) + neu*pow(nbasis,2) + lambda*nbasis + sigma;
+                    result += coff_mat(sigma, s) * ao_ints_vector[0];
+                }
+            }
+        }
+    }
+
+    // second loop
+    auto temp = 0;
+    for (auto lambda = 0; lambda < n; ++lambda) {
+        temp += coff_mat(lambda, r) * result;
+    }
+    result *= temp;
+     
+    // third loop
+    temp = 0;
+    for (auto neu = 0; neu < n; ++neu) {
+        temp += coff_mat(neu, r) * result;
+    }
+    result *= temp;
+     
+    // fourth loop
+    temp = 0;
+    for (auto sigma = 0; sigma < n; ++sigma) {
+        temp += coff_mat(sigma, r) * result;
+    }
+    result *= temp;
+     
+    return result;
 }
 
 int main() {
