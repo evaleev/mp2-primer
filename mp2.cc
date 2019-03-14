@@ -9,7 +9,8 @@
 #include <math.h>
 #include "hartree-fock.h"
 
-void fill_ao_ints_vec(std::vector<libint2::Shell>& shells, std::vector<double>& ao_ints_vector) {
+void fill_ao_ints_vec(std::vector<libint2::Shell>& shells, std::vector<double>& ao_ints_vector)
+{
      
     /* double mu, double neu, double lambda, double sigma) { */
     // returns 2e integral on ao basis
@@ -86,7 +87,7 @@ void fill_ao_ints_vec(std::vector<libint2::Shell>& shells, std::vector<double>& 
     }
 }
 
-double int_2e_mo(Eigen::MatrixXd& coff_mat, std::vector<double>& ao_ints_vector,
+double int_2e_mo(Matrix& coff_mat, std::vector<double>& ao_ints_vector,
                     size_t p, size_t q, size_t r, size_t s) {
     // specified p, q, r and s: indices of the two pairs of molecular orbitals
     // returns the two-electron repulsion integral
@@ -99,12 +100,12 @@ double int_2e_mo(Eigen::MatrixXd& coff_mat, std::vector<double>& ao_ints_vector,
     double result = 0;
 
     // first loop
-    for (auto mu = 0; mu  < n; ++mu) {
-        for (auto neu = 0; neu < n; ++neu) {
-            for (auto lambda = 0; lambda < n; ++lambda) {
-                for (auto sigma = 0; sigma < n; ++sigma) {
+    for (auto mu = 0; mu  < nbasis; ++mu) {
+        for (auto neu = 0; neu < nbasis; ++neu) {
+            for (auto lambda = 0; lambda < nbasis; ++lambda) {
+                for (auto sigma = 0; sigma < nbasis; ++sigma) {
                     auto ao_int_position = mu*pow(nbasis,3) + neu*pow(nbasis,2) + lambda*nbasis + sigma;
-                    result += coff_mat(sigma, s) * ao_ints_vector[0];
+                    result += coff_mat(sigma, s) * ao_ints_vector[ao_int_position];
                 }
             }
         }
@@ -112,36 +113,24 @@ double int_2e_mo(Eigen::MatrixXd& coff_mat, std::vector<double>& ao_ints_vector,
 
     // second loop
     auto temp = 0;
-    for (auto lambda = 0; lambda < n; ++lambda) {
+    for (auto lambda = 0; lambda < nbasis; ++lambda) {
         temp += coff_mat(lambda, r) * result;
     }
     result *= temp;
      
     // third loop
     temp = 0;
-    for (auto neu = 0; neu < n; ++neu) {
-        temp += coff_mat(neu, r) * result;
+    for (auto neu = 0; neu < nbasis; ++neu) {
+        temp += coff_mat(neu, q) * result;
     }
     result *= temp;
      
     // fourth loop
     temp = 0;
-    for (auto sigma = 0; sigma < n; ++sigma) {
-        temp += coff_mat(sigma, r) * result;
+    for (auto mu = 0; mu < nbasis; ++mu) {
+        temp += coff_mat(mu, p) * result;
     }
     result *= temp;
      
     return result;
-}
-
-int main() {
-    using std::cout;
-    using std::endl;
-    const auto filename = "h2o.xyz";
-    std::vector<Atom> atoms = read_geometry(filename);
-    auto shells = make_sto3g_basis(atoms);
-    std::vector<double> ao_ints_vector;
-    fill_ao_ints_vec(shells, ao_ints_vector);
-    cout << ao_ints_vector.size() << endl;
-    return 0;
 }
