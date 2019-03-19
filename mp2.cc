@@ -12,7 +12,6 @@
 void fill_ao_ints_vec(std::vector<libint2::Shell>& shells, std::vector<double>& ao_ints_vector)
 {
      
-    /* double mu, double neu, double lambda, double sigma) { */
     // returns 2e integral on ao basis
 
     using std::cout;
@@ -99,38 +98,17 @@ double int_2e_mo(Matrix& coff_mat, std::vector<double>& ao_ints_vector,
      
     double result = 0;
 
-    // first loop
-    for (auto mu = 0; mu  < nbasis; ++mu) {
+    for (auto mu = 0; mu < nbasis; ++mu) {
         for (auto neu = 0; neu < nbasis; ++neu) {
             for (auto lambda = 0; lambda < nbasis; ++lambda) {
                 for (auto sigma = 0; sigma < nbasis; ++sigma) {
-                    auto ao_int_position = mu*pow(nbasis,3) + neu*pow(nbasis,2) + lambda*nbasis + sigma;
-                    result += coff_mat(sigma, s) * ao_ints_vector[ao_int_position];
+                    // the integral of mu, neu, lambda, sigma on ao basis
+                    auto ao_int = ao_ints_vector[mu*pow(nbasis, 3) + neu*pow(nbasis, 2) + lambda*nbasis + sigma];
+                    // transform it
+                    result += coff_mat(mu,p)*coff_mat(neu,q)*ao_int*coff_mat(lambda,r)*coff_mat(sigma,s);
                 }
             }
         }
     }
-
-    // second loop
-    auto temp = 0;
-    for (auto lambda = 0; lambda < nbasis; ++lambda) {
-        temp += coff_mat(lambda, r) * result;
-    }
-    result *= temp;
-     
-    // third loop
-    temp = 0;
-    for (auto neu = 0; neu < nbasis; ++neu) {
-        temp += coff_mat(neu, q) * result;
-    }
-    result *= temp;
-     
-    // fourth loop
-    temp = 0;
-    for (auto mu = 0; mu < nbasis; ++mu) {
-        temp += coff_mat(mu, p) * result;
-    }
-    result *= temp;
-     
     return result;
 }

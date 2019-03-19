@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
                                          // thus set to false to use Superposition-Of-Atomic-Densities (SOAD) guess
     Matrix D;
     Matrix C;
+    Eigen::VectorXd C_v; // eigenvalues
     if (use_hcore_guess) { // hcore guess
       // solve H C = e S C
       Eigen::GeneralizedSelfAdjointEigenSolver<Matrix> gen_eig_solver(H, S);
@@ -143,6 +144,7 @@ int main(int argc, char *argv[])
       Eigen::GeneralizedSelfAdjointEigenSolver<Matrix> gen_eig_solver(F, S);
       auto eps = gen_eig_solver.eigenvalues();
       C = gen_eig_solver.eigenvectors();
+      C_v = gen_eig_solver.eigenvalues();
 
       // compute density, D = C(occ) . C(occ)T
       auto C_occ = C.leftCols(ndocc);
@@ -179,21 +181,21 @@ int main(int argc, char *argv[])
     std::vector<double> ao_ints_vector;
     fill_ao_ints_vec(shells, ao_ints_vector);
      
-    std::vector<double> mo_ints_vector;
-    // fill mo_ints_vector
-    //
-    auto basis_size = sqrt(sqrt(ao_ints_vector.size()));
-    for (auto p = 0; p < basis_size; ++p) {
-        for (auto q = 0; q < basis_size; ++q) {
-            for (auto r = 0; r < basis_size; ++r) {
-                for (auto s = 0; s < basis_size; ++s) {
-                    mo_ints_vector.push_back(int_2e_mo(C, ao_ints_vector, p, q, r, s));
+    // calculating Emp2
+    auto emp2 = 0;
+    for (auto i =0; i < ndocc; ++i) {
+        for (auto j =0; j < ndocc; ++j) {
+            for (auto a = ndocc; a < nao; ++a) {
+                for (auto b = ndocc; b < nao; ++b) {
+                    // the two 2e mo integrals
+                    auto int1 = int_2e_mo(C, ao_ints_vector, i, a, j, b);
+                    auto int2 = int_2e_mo(C, ao_ints_vector, i, b, j, a);
+                    emp2 += (int1 * (2*int1 - int2))/(C_v(i) + C_v(j) - C_v(a) - C_v(b));
                 }
             }
         }
     }
-    //
-    //
+    std::cout << "The MP2 energy is : " << emp2 << std::endl;
     libint2::finalize(); // done with libint
 
   } // end of try block; if any exceptions occurred, report them and exit cleanly
